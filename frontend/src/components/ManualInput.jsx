@@ -39,6 +39,49 @@ const ManualInput = ({ setResult }) => {
     fractal_dimension_worst: 0.08395,
   };
 
+  const inputs = [
+    {
+      name: "concave_points_worst",
+      label: "🔬 Tumor Irregularity (Worst)",
+      placeholder: "e.g. 0.2654",
+      hint: "How irregular is the tumor shape at its worst",
+      min: 0.0,
+      max: 0.291,
+    },
+    {
+      name: "perimeter_worst",
+      label: "📏 Tumor Boundary Size (Worst)",
+      placeholder: "e.g. 184.60",
+      hint: "Size of tumor boundary at its largest",
+      min: 50.41,
+      max: 251.20,
+    },
+    {
+      name: "concave_points_mean",
+      label: "🔬 Average Tumor Irregularity",
+      placeholder: "e.g. 0.1471",
+      hint: "Average irregularity of tumor shape",
+      min: 0.0,
+      max: 0.201,
+    },
+    {
+      name: "radius_worst",
+      label: "📐 Tumor Size (Worst)",
+      placeholder: "e.g. 25.38",
+      hint: "Size of tumor at its largest",
+      min: 7.93,
+      max: 36.04,
+    },
+    {
+      name: "perimeter_mean",
+      label: "📏 Average Tumor Boundary",
+      placeholder: "e.g. 122.80",
+      hint: "Average size of tumor boundary",
+      min: 43.79,
+      max: 188.50,
+    },
+  ];
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError(null);
@@ -46,9 +89,21 @@ const ManualInput = ({ setResult }) => {
   };
 
   const handleSubmit = async () => {
+    // Empty check
     for (let key in formData) {
       if (formData[key] === "") {
         setError("Please fill all fields!");
+        return;
+      }
+    }
+
+    // Range validation
+    for (let input of inputs) {
+      const value = parseFloat(formData[input.name]);
+      if (value < input.min || value > input.max) {
+        setError(
+          `${input.label} must be between ${input.min} and ${input.max}!`
+        );
         return;
       }
     }
@@ -104,40 +159,6 @@ const ManualInput = ({ setResult }) => {
     }
   };
 
-  // User Friendly Labels! ✅
-  const inputs = [
-    {
-      name: "concave_points_worst",
-      label: "🔬 Tumor Irregularity (Worst)",
-      placeholder: "e.g. 0.2654",
-      hint: "How irregular is the tumor shape at its worst"
-    },
-    {
-      name: "perimeter_worst",
-      label: "📏 Tumor Boundary Size (Worst)",
-      placeholder: "e.g. 184.60",
-      hint: "Size of tumor boundary at its largest"
-    },
-    {
-      name: "concave_points_mean",
-      label: "🔬 Average Tumor Irregularity",
-      placeholder: "e.g. 0.1471",
-      hint: "Average irregularity of tumor shape"
-    },
-    {
-      name: "radius_worst",
-      label: "📐 Tumor Size (Worst)",
-      placeholder: "e.g. 25.38",
-      hint: "Size of tumor at its largest"
-    },
-    {
-      name: "perimeter_mean",
-      label: "📏 Average Tumor Boundary",
-      placeholder: "e.g. 122.80",
-      hint: "Average size of tumor boundary"
-    },
-  ];
-
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8">
       <h2 className="text-xl font-bold text-gray-700 mb-2">
@@ -159,28 +180,45 @@ const ManualInput = ({ setResult }) => {
               value={formData[input.name]}
               onChange={handleChange}
               placeholder={input.placeholder}
+              min={input.min}
+              max={input.max}
+              step="any"
               className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-indigo-500 transition-all"
             />
-            {/* Hint text */}
-            <p className="text-gray-400 text-xs mt-1">
-              💡 {input.hint}
-            </p>
+            {/* Hint + Range */}
+            <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <span>💡 {input.hint}</span>
+              <span className="font-semibold">
+                Range: {input.min} - {input.max}
+              </span>
+            </div>
           </div>
         ))}
       </div>
 
+      {/* Error */}
       {error && (
-        <p className="text-red-500 text-sm mb-4 text-center">
-          ❌ {error}
-        </p>
+        <div className="bg-red-50 border border-red-300 rounded-xl px-4 py-3 mb-4">
+          <p className="text-red-500 text-sm text-center">
+            ❌ {error}
+          </p>
+        </div>
       )}
 
+      {/* Submit Button */}
       <button
         onClick={handleSubmit}
         disabled={loading}
-        className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-all disabled:opacity-50"
+        className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
       >
-        {loading ? "Predicting... ⏳" : "Predict 🔍"}
+        {loading ? (
+          <>
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            Predicting...
+          </>
+        ) : (
+          "Predict 🔍"
+        )}
       </button>
     </div>
   );

@@ -114,14 +114,21 @@ const CSVUpload = ({ setResult }) => {
         </p>
       )}
 
-      {/* Submit Button */}
-      <button
-        onClick={handleSubmit}
-        disabled={loading}
-        className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-all disabled:opacity-50"
-      >
-        {loading ? "Predicting... ⏳" : "Predict 🔍"}
-      </button>
+     {/* Submit Button */}
+<button
+  onClick={handleSubmit}
+  disabled={loading}
+  className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+>
+  {loading ? (
+    <>
+      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      Predicting...
+    </>
+  ) : (
+    "Predict 🔍"
+  )}
+</button>
     </div>
   );
 };
