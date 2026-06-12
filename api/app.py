@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify
+ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import numpy as np
+import pandas as pd
 import pickle
 import os
 from tensorflow.keras.models import load_model
@@ -8,7 +9,7 @@ from tensorflow.keras.models import load_model
 app = Flask(__name__)
 CORS(app)
 
-# Absolute paths banao - kahin se bhi run karo, sahi milega
+# Absolute paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'breast_cancer_model.h5')
 SCALER_PATH = os.path.join(BASE_DIR, '..', 'models', 'scaler.pkl')
@@ -21,6 +22,19 @@ with open(SCALER_PATH, 'rb') as f:
     scaler = pickle.load(f)
 
 print("✅ Model aur Scaler loaded!")
+
+# Feature names - training time wale exact naam
+FEATURE_NAMES = [
+    'radius_mean', 'texture_mean', 'perimeter_mean', 'area_mean',
+    'smoothness_mean', 'compactness_mean', 'concavity_mean',
+    'concave points_mean', 'symmetry_mean', 'fractal_dimension_mean',
+    'radius_se', 'texture_se', 'perimeter_se', 'area_se',
+    'smoothness_se', 'compactness_se', 'concavity_se',
+    'concave points_se', 'symmetry_se', 'fractal_dimension_se',
+    'radius_worst', 'texture_worst', 'perimeter_worst', 'area_worst',
+    'smoothness_worst', 'compactness_worst', 'concavity_worst',
+    'concave points_worst', 'symmetry_worst', 'fractal_dimension_worst'
+]
 
 
 @app.route('/', methods=['GET'])
@@ -50,20 +64,8 @@ def predict():
                 'status': 'failed'
             }), 400
 
-        # DataFrame banao (warning fix)
-        import pandas as pd
-        feature_names = [
-            'mean radius', 'mean texture', 'mean perimeter', 'mean area',
-            'mean smoothness', 'mean compactness', 'mean concavity',
-            'mean concave points', 'mean symmetry', 'mean fractal dimension',
-            'radius error', 'texture error', 'perimeter error', 'area error',
-            'smoothness error', 'compactness error', 'concavity error',
-            'concave points error', 'symmetry error', 'fractal dimension error',
-            'worst radius', 'worst texture', 'worst perimeter', 'worst area',
-            'worst smoothness', 'worst compactness', 'worst concavity',
-            'worst concave points', 'worst symmetry', 'worst fractal dimension'
-        ]
-        features_df = pd.DataFrame([features], columns=feature_names)
+        # DataFrame banao with correct feature names
+        features_df = pd.DataFrame([features], columns=FEATURE_NAMES)
 
         features_scaled = scaler.transform(features_df)
         prediction_prob = model.predict(features_scaled, verbose=0)
