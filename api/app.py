@@ -50,9 +50,23 @@ def predict():
                 'status': 'failed'
             }), 400
 
-        features = np.array(features).reshape(1, -1)
-        features_scaled = scaler.transform(features)
-        prediction_prob = model.predict(features_scaled)
+        # DataFrame banao (warning fix)
+        import pandas as pd
+        feature_names = [
+            'mean radius', 'mean texture', 'mean perimeter', 'mean area',
+            'mean smoothness', 'mean compactness', 'mean concavity',
+            'mean concave points', 'mean symmetry', 'mean fractal dimension',
+            'radius error', 'texture error', 'perimeter error', 'area error',
+            'smoothness error', 'compactness error', 'concavity error',
+            'concave points error', 'symmetry error', 'fractal dimension error',
+            'worst radius', 'worst texture', 'worst perimeter', 'worst area',
+            'worst smoothness', 'worst compactness', 'worst concavity',
+            'worst concave points', 'worst symmetry', 'worst fractal dimension'
+        ]
+        features_df = pd.DataFrame([features], columns=feature_names)
+
+        features_scaled = scaler.transform(features_df)
+        prediction_prob = model.predict(features_scaled, verbose=0)
         prediction = int(prediction_prob[0][0] > 0.5)
 
         return jsonify({
