@@ -4,26 +4,28 @@ import numpy as np
 import pandas as pd
 import pickle
 import os
-from tensorflow.keras.models import load_model
 
 app = Flask(__name__)
 CORS(app)
 
 # Absolute paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, '..', 'models', 'breast_cancer_model.h5')
+WEIGHTS_PATH = os.path.join(BASE_DIR, '..', 'models', 'model_weights.pkl')
 SCALER_PATH = os.path.join(BASE_DIR, '..', 'models', 'scaler.pkl')
 
-print("Loading model from:", MODEL_PATH)
-model = load_model(MODEL_PATH)
+print("Loading weights from:", WEIGHTS_PATH)
+with open(WEIGHTS_PATH, 'rb') as f:
+    weights = pickle.load(f)
+
+# weights unpack karo
+W1, b1, W2, b2, W3, b3 = weights
 
 print("Loading scaler from:", SCALER_PATH)
 with open(SCALER_PATH, 'rb') as f:
     scaler = pickle.load(f)
 
-print("✅ Model aur Scaler loaded!")
+print("✅ Weights aur Scaler loaded!")
 
-# Feature names - training time wale exact naam
 FEATURE_NAMES = [
     'radius_mean', 'texture_mean', 'perimeter_mean', 'area_mean',
     'smoothness_mean', 'compactness_mean', 'concavity_mean',
@@ -35,6 +37,24 @@ FEATURE_NAMES = [
     'smoothness_worst', 'compactness_worst', 'concavity_worst',
     'concave points_worst', 'symmetry_worst', 'fractal_dimension_worst'
 ]
+
+
+def relu(x):
+    return np.maximum(0, x)
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+def predict_manual(X):
+    # Layer 1
+    z1 = relu(X @ W1 + b1)
+    # Layer 2
+    z2 = relu(z1 @ W2 + b2)
+    # Output
+    z3 = sigmoid(z2 @ W3 + b3)
+    return z3
 
 
 @app.route('/', methods=['GET'])
@@ -67,8 +87,11 @@ def predict():
         # DataFrame banao with correct feature names
         features_df = pd.DataFrame([features], columns=FEATURE_NAMES)
 
+        # Scale karo
         features_scaled = scaler.transform(features_df)
-        prediction_prob = model.predict(features_scaled, verbose=0)
+
+        # Manual forward pass
+        prediction_prob = predict_manual(features_scaled)
         prediction = int(prediction_prob[0][0] > 0.5)
 
         return jsonify({
