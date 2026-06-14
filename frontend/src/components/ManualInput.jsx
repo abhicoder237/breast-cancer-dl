@@ -144,7 +144,7 @@ const ManualInput = ({ setResult }) => {
         defaultValues.fractal_dimension_worst,
       ];
 
-      const response = await fetch("http://127.0.0.1:5000/predict", {
+      const response = await fetch("https://breast-cancer-api-n8t2.onrender.com/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ features }),
@@ -155,7 +155,7 @@ const ManualInput = ({ setResult }) => {
     } catch (err) {
       setError("Something went wrong! Check API.");
     } finally {
-      setLoading(false);
+      setLoading(false);// uvdmvnmdvndkvnkdvndkvndkvndv
     }
   };
 
